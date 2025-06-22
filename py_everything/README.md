@@ -7,6 +7,7 @@ PyEverything 是一个用 Python 构建的桌面文件快速搜索工具，灵�
 - **极速搜索**: 对所有索引过的文件和文件夹进行即时搜索。
 - **多目录索引**: 支持同时添加、管理和搜索多个不同的磁盘目录。
 - **实时更新**: 自动监控文件系统的增、删、改、移动操作，并实时更新索引，无需手动刷新。
+- **性能优化**: 优化了首次建立索引的流程，通过分批处理技术，显著提升了对包含海量文件（数百万级别）目录的索引速度，并降低了内存消耗。
 - **图形用户界面**: 基于 PyQt6 构建，提供一个简洁直观的界面，包括搜索栏、结果列表和状态显示。
 - **便捷操作**: 支持在搜索结果中双击打开文件，或右键打开文件所在位置。
 - **后台处理**: 所有的索引和搜索任务都在后台线程中执行，确保用户界面始终流畅不卡顿。
@@ -64,7 +65,7 @@ python py_everything/ui/main_window.py
 ```
 py_everything/
 ├── core/
-│   ├── indexer.py      # 封装了 Whoosh 的索引和搜索核心逻辑
+│   ├── indexer.py      # 封装了 SQLite 和 FTS5 的索引与搜索核心逻辑
 │   ├── scanner.py      # 负责遍历文件目录
 │   └── watcher.py      # 使用 watchdog 进行文件系统实时监控
 ├── ui/
@@ -108,6 +109,7 @@ PyEverything is a desktop file search tool built with Python, inspired by the fa
 - **Blazing-fast Search**: Instantly search all indexed files and folders.
 - **Multi-directory Indexing**: Supports adding, managing, and searching multiple different disk directories simultaneously.
 - **Real-time Updates**: Automatically monitors file system for creations, deletions, modifications, and moves, updating the index in real-time without manual refreshes.
+- **Performance Optimized**: The initial indexing process has been optimized. By using batch processing, it significantly improves the indexing speed for directories containing a massive number of files (millions) and reduces memory consumption.
 - **Graphical User Interface**: Built with PyQt6, providing a clean and intuitive interface with a search bar, results list, and status display.
 - **Convenient Operations**: Supports opening files by double-clicking in the search results or opening the file's location with a right-click.
 - **Background Processing**: All indexing and search tasks are executed in background threads to ensure the user interface remains smooth and responsive.
@@ -165,7 +167,7 @@ On the first run, you will need to use the "Add" button on the left panel to sel
 ```
 py_everything/
 ├── core/
-│   ├── indexer.py      # Core logic for indexing and searching with Whoosh
+│   ├── indexer.py      # Core logic for indexing and searching with SQLite and FTS5
 │   ├── scanner.py      # Responsible for traversing file directories
 │   └── watcher.py      # Real-time file system monitoring using watchdog
 ├── ui/

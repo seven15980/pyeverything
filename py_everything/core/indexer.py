@@ -191,21 +191,29 @@ class Indexer:
         cursor.execute("DELETE FROM files WHERE path = ?", (str(path),))
         self.conn.commit()
 
-    def search(self, query_str):
+    def search(self, query_str, limit=None):
         """
         使用 FTS5 执行全文搜索。
+        新增 limit 参数以限制返回结果的数量。
         """
         cursor = self.conn.cursor()
         
         processed_query = f'{query_str}*'
         
-        cursor.execute("""
+        sql = """
             SELECT f.path, f.name, f.type, f.size, f.mtime
             FROM files f
             JOIN files_fts ON f.id = files_fts.rowid
             WHERE files_fts.name MATCH ?
-            ORDER BY rank;
-        """, (processed_query,))
+            ORDER BY rank
+        """
+        params = (processed_query,)
+
+        if limit:
+            sql += " LIMIT ?"
+            params += (limit,)
+        
+        cursor.execute(sql, params)
         
         return [dict(row) for row in cursor.fetchall()]
 

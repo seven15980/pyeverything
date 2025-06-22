@@ -44,6 +44,7 @@ class SearchWorker(QObject):
         super().__init__()
         self.db_path = db_path
         self.indexer = None # 将在线程内创建
+        self.SEARCH_LIMIT = 5000 # 定义结果限制
 
     @pyqtSlot()
     def clean_up(self):
@@ -62,7 +63,7 @@ class SearchWorker(QObject):
             if not query_str.strip():
                 self.results_ready.emit([])
                 return
-            results = self.indexer.search(query_str)
+            results = self.indexer.search(query_str, limit=self.SEARCH_LIMIT)
             self.results_ready.emit(results)
         except Exception as e:
             self.error_occurred.emit(str(e))
@@ -108,15 +109,30 @@ class ScanningWorker(QObject):
         self.indexer.add_indexed_path(path)
         # 执行全盘扫描
         documents = []
+        BATCH_SIZE = 10000 # 定义批处理大小
+        count = 0
+        
+        self.status_update.emit(f"正在扫描 {path}...")
         for dp, dn, fn in os.walk(path):
             for it in dn + fn:
                 fp = os.path.join(dp, it)
                 try:
                     si = os.stat(fp)
                     documents.append((fp, it, 'folder' if os.path.isdir(fp) else 'file', si.st_size, si.st_mtime))
+                    count += 1
+                    
+                    if len(documents) >= BATCH_SIZE:
+                        self.indexer.add_documents_batch(documents)
+                        self.status_update.emit(f"已索引 {count} 个项目...")
+                        documents = [] # 清空列表以备下一批
+
                 except OSError: continue
-        self.indexer.add_documents_batch(documents)
-        self.status_update.emit(f"目录 '{path}' 添加成功！")
+        
+        # 处理最后一批不足 BATCH_SIZE 的数据
+        if documents:
+            self.indexer.add_documents_batch(documents)
+        
+        self.status_update.emit(f"目录 '{path}' 添加成功！总计 {count} 个项目。")
         self.paths_updated.emit(self.indexer.get_indexed_paths())
 
     @pyqtSlot(str)
@@ -348,7 +364,12 @@ class MainWindow(QMainWindow):
     @pyqtSlot(list)
     def on_search_complete(self, results):
         """当搜索完成时，在状态栏更新结果数量。"""
-        self.statusBar().showMessage(f"找到了 {len(results)} 个结果")
+        num_results = len(results)
+        limit = self.search_worker.SEARCH_LIMIT
+        if num_results >= limit:
+            self.statusBar().showMessage(f"已显示最匹配的前 {num_results} 个结果...")
+        else:
+            self.statusBar().showMessage(f"找到了 {num_results} 个结果")
 
     def on_search_error(self, error_message: str):
         """当搜索发生错误时，更新状态栏。"""
