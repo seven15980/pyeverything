@@ -20,7 +20,7 @@ PyEverything 是一个用 Python 构建的桌面文件快速搜索工具，灵�
 ## 🛠️ 技术栈
 
 - **图形界面 (GUI)**: `PyQt6`
-- **索引与搜索**: `Whoosh`
+- **索引与搜索**: `SQLite (FTS5)`
 - **文件系统监控**: `watchdog`
 - **打包**: `pyinstaller`
 
@@ -121,7 +121,7 @@ PyEverything is a desktop file search tool built with Python, inspired by the fa
 ## 🛠️ Tech Stack
 
 - **GUI**: `PyQt6`
-- **Indexing & Search**: `Whoosh`
+- **Indexing & Search**: `SQLite (FTS5)`
 - **File System Monitoring**: `watchdog`
 - **Packaging**: `pyinstaller`
 
